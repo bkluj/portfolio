@@ -104,13 +104,13 @@ body {
 @keyframes float {
     0%,
     100% {
-        transform: translateY(0px) rotate(var(--start-rotation, 0deg));
+        transform: translateY(0px) rotate(0deg);
     }
     50% {
-        transform: translateY(-20px)
-            rotate(calc(var(--start-rotation, 0deg) + 180deg));
+        transform: translateY(-20px) rotate(180deg);
     }
 }
+
 /* Glass container styles */
 .glass {
     background: rgba(255, 255, 255, 0.15);
@@ -650,6 +650,22 @@ button[type="submit"] {
 .copyright a {
 	color: rgba(255, 255, 255, 0.6);
 	text-decoration: none;
+}
+a {
+    color: white;
+    text-decoration: none; /* usuwa podkreślenie */
+}
+
+a:visited {
+    color: white; /* po kliknięciu nadal biały */
+}
+
+a:hover {
+    color: #ddd; /* delikatny efekt po najechaniu (opcjonalnie) */
+}
+
+a:active {
+    color: white;
 }
 /* Responsive design */
 @media (max-width: 1024px) {
