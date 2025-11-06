@@ -217,4 +217,93 @@ let currentPage = 'home';
             if (e.target === modal || e.target === modalImg) {
                 modal.style.display = 'none';
             }
+        })
+
+
+        // === Simple gallery init ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const galleries = document.querySelectorAll('[data-gallery]');
+            galleries.forEach(initGallery);
+
+            // Jeżeli masz nawigację "page switch", możesz wywołać to ponownie po zmianie strony.
+            // Np. w showPage() wywołaj: reInitGalleries();
         });
+
+        function initGallery(root) {
+            if (root.__inited) return; // uniknij podwójnej inicjalizacji
+            root.__inited = true;
+
+            const track = root.querySelector('[data-track]');
+            const slides = Array.from(track.querySelectorAll('.slide'));
+            const prevBtn = root.querySelector('[data-prev]');
+            const nextBtn = root.querySelector('[data-next]');
+            const dotsWrap = root.querySelector('[data-dots]');
+            let index = 0;
+
+            // Dots
+            const dots = slides.map((_, i) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.setAttribute('aria-label', `Go to slide ${i+1}`);
+                b.addEventListener('click', () => goTo(i));
+                dotsWrap.appendChild(b);
+                return b;
+            });
+
+            function goTo(i) {
+                index = Math.max(0, Math.min(i, slides.length - 1));
+                track.style.transform = `translateX(${-index * 100}%)`;
+                prevBtn.disabled = index === 0;
+                nextBtn.disabled = index === slides.length - 1;
+                dots.forEach((d, di) => d.setAttribute('aria-current', di === index ? 'true' : 'false'));
+            }
+
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goTo(index - 1);
+            });
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goTo(index + 1);
+            });
+
+
+            // Klawiatura (gdy focus w obrębie galerii)
+            root.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); }
+                if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); }
+            });
+            // Focusable dla dostępności
+            root.tabIndex = 0;
+
+            // Swipe (touch)
+            let startX = 0, isDown = false;
+            track.addEventListener('touchstart', (e) => {
+                if (!e.touches[0]) return;
+                isDown = true; startX = e.touches[0].clientX;
+            }, { passive: true });
+
+            track.addEventListener('touchmove', (e) => {
+                // nie potrzebujemy nic w trakcie; tylko pasywnie
+            }, { passive: true });
+
+            track.addEventListener('touchend', (e) => {
+                if (!isDown) return;
+                isDown = false;
+                const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : startX;
+                const delta = endX - startX;
+                const threshold = 40; // px
+                if (delta > threshold) goTo(index - 1);
+                if (delta < -threshold) goTo(index + 1);
+            });
+
+            goTo(0);
+        }
+
+        // Jeżeli masz przełączanie stron przez JS (showPage), odpal ponownie dla nowych/ukrytych sekcji:
+        function reInitGalleries() {
+            document.querySelectorAll('[data-gallery]').forEach(initGallery);
+        }
+

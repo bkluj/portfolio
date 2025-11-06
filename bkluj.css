@@ -811,6 +811,112 @@ a:active {
     user-select: none;
 }
 
+/* === Simple gallery === */
+.media-gallery {
+    position: relative;
+    padding: 16px;
+    border-radius: 16px;
+}
+
+.gallery-viewport {
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.gallery-track {
+    display: flex;
+    gap: 0;
+    transition: transform 350ms ease;
+    will-change: transform;
+}
+
+.slide {
+    min-width: 100%;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,0.06);
+}
+
+.slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 520px;           /* możesz zmienić */
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+/* Strzałki */
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    transition: transform .2s ease, background .2s ease, opacity .2s ease;
+    user-select: none;
+}
+.gallery-nav:hover { background: rgba(255,255,255,0.26); transform: translateY(-50%) scale(1.05); }
+.gallery-nav:disabled { opacity: 0.45; cursor: default; }
+
+.gallery-nav.prev { left: 10px; }
+.gallery-nav.next { right: 10px; }
+
+/* Kropki */
+.gallery-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+}
+.gallery-dots button {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: width .2s ease, background .2s ease;
+}
+.gallery-dots button[aria-current="true"] {
+    width: 22px;
+    background: rgba(255,255,255,0.85);
+}
+
+/* upewnij się, że galeria tworzy własny stacking context */
+.media-gallery { position: relative; isolation: isolate; }
+
+/* strzałki muszą być „ponad” obrazem i chwytają klik */
+.gallery-nav { z-index: 5; pointer-events: auto; }
+
+/* obraz może być niżej */
+.slide img { position: relative; z-index: 1; }
+
+/* (opcjonalnie) większy hit-area strzałek, łatwiej trafić */
+.gallery-nav::after {
+    content: "";
+    position: absolute;
+    inset: -8px;   /* powiększa obszar klikalny */
+}
+
+
+/* Mobile drobne dopasowanie */
+@media (max-width: 768px) {
+    .slide img { max-height: 360px; }
+    .gallery-nav { width: 40px; height: 40px; font-size: 20px; }
+}
+
 
 /* Responsive design */
 @media (max-width: 1024px) {
