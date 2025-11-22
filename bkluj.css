@@ -103,6 +103,42 @@ body {
     animation-delay: 5s;
     transform: rotate(-15deg);
 }
+.shape:nth-child(3) {
+    width: 100px;
+    height: 60px;
+    border-radius: 10px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+    transform: rotate(25deg);
+}
+.shape:nth-child(4) {
+    width: 80px;
+    height: 120px;
+    border-radius: 8px;
+    top: 10%;
+    right: 30%;
+    animation-delay: 1s;
+    transform: rotate(-10deg);
+}
+.shape:nth-child(5) {
+    width: 110px;
+    height: 70px;
+    border-radius: 14px;
+    bottom: 40%;
+    right: 20%;
+    animation-delay: 3s;
+    transform: rotate(30deg);
+}
+.shape:nth-child(6) {
+    width: 95px;
+    height: 95px;
+    border-radius: 20px;
+    top: 40%;
+    left: 5%;
+    animation-delay: 5s;
+    transform: rotate(-15deg);
+}
 @keyframes float {
     0%,
     100% {
@@ -276,7 +312,53 @@ button[type="submit"] {
     padding: 40px 30px;
     text-align: center;
     color: white;
+    position: relative; /* konieczne, aby corner działał */
 }
+
+.gh-corner {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.35);
+    border-radius: 12px;
+
+    backdrop-filter: blur(12px);
+
+    cursor: pointer;
+    transition: 0.25s ease;
+    z-index: 20; /* żeby zawsze była na wierzchu */
+}
+
+.gh-corner:hover {
+    background: rgba(255,255,255,0.25);
+    transform: scale(1.12);
+    border-color: rgba(255,255,255,0.8);
+    box-shadow: 0 0 12px rgba(255,255,255,1);
+}
+
+/* Ikonka w środku */
+.gh-icon {
+    width: 22px;
+    height: 22px;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.9));
+    transition: 0.25s ease;
+}
+
+.gh-corner:hover .gh-icon {
+    filter: drop-shadow(0 0 12px rgba(255,255,255,1));
+    transform: scale(1.12);
+}
+
+
 .feature-icon {
     width: 60px;
     height: 60px;
@@ -798,6 +880,38 @@ a:active {
     cursor: zoom-out;
 }
 
+/* animacje zmiany obrazka w podglądzie (modal) */
+.image-modal img.lb-slide-right {
+    animation: lbSlideRight 0.25s ease;
+}
+
+.image-modal img.lb-slide-left {
+    animation: lbSlideLeft 0.25s ease;
+}
+
+@keyframes lbSlideRight {
+    from {
+        opacity: 0;
+        transform: translateX(32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes lbSlideLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-32px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
 /* X w prawym górnym rogu (opcjonalnie) */
 .image-modal-close {
     position: absolute;
@@ -812,11 +926,15 @@ a:active {
 }
 
 /* === Simple gallery === */
+/* === Simple gallery === */
 .media-gallery {
     position: relative;
-    padding: 16px;
+    isolation: isolate;       /* własny stacking context */
+    padding: 16px 16px 8px;   /* możesz zmienić */
     border-radius: 16px;
+    background: transparent;  /* bez dodatkowego „szkła” */
 }
+
 
 .gallery-viewport {
     overflow: hidden;
@@ -837,36 +955,9 @@ a:active {
     background: rgba(255,255,255,0.06);
 }
 
-.slide img {
-    width: 100%;
-    height: auto;
-    display: block;
-    max-height: 520px;           /* możesz zmienić */
-    object-fit: contain;
-    border-radius: 12px;
-}
 
-/* Strzałki */
-.gallery-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.35);
-    background: rgba(255,255,255,0.18);
-    color: #fff;
-    font-size: 22px;
-    line-height: 1;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-    transition: transform .2s ease, background .2s ease, opacity .2s ease;
-    user-select: none;
-}
+
+
 .gallery-nav:hover { background: rgba(255,255,255,0.26); transform: translateY(-50%) scale(1.05); }
 .gallery-nav:disabled { opacity: 0.45; cursor: default; }
 
@@ -894,21 +985,152 @@ a:active {
     background: rgba(255,255,255,0.85);
 }
 
-/* upewnij się, że galeria tworzy własny stacking context */
-.media-gallery { position: relative; isolation: isolate; }
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    transition: transform .2s ease, background .2s ease, opacity .2s ease;
+    user-select: none;
+    z-index: 5;             /* NAD obrazem */
+    pointer-events: auto;
+}
 
-/* strzałki muszą być „ponad” obrazem i chwytają klik */
-.gallery-nav { z-index: 5; pointer-events: auto; }
-
-/* obraz może być niżej */
-.slide img { position: relative; z-index: 1; }
-
-/* (opcjonalnie) większy hit-area strzałek, łatwiej trafić */
 .gallery-nav::after {
     content: "";
     position: absolute;
-    inset: -8px;   /* powiększa obszar klikalny */
+    inset: -8px;   /* powiększa hit-area */
 }
+
+
+.slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 520px;      /* możesz zmienić */
+    object-fit: contain;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;             /* obraz pod strzałkami */
+}
+
+/* Ustaw tytuł projektu z ikoną GitHuba po PRAWEJ stronie */
+.project-title {
+    display: flex;
+    justify-content: space-between; /* <-- to powoduje wyrównanie ikonki do prawej */
+    align-items: end;
+    gap: 12px;
+}
+
+.gh-box {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    display: flex;
+    gap: 8px; /* tu będą 2+ ikonki obok siebie */
+
+    z-index: 20;
+}
+
+/* Każda pojedyncza ikonka */
+.corner-icon {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+/* Delikatny hover */
+.corner-icon:hover {
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.06); /* minimalne powiększenie */
+    border-color: rgba(255,255,255,0.55);
+    box-shadow: 0 0 6px rgba(255,255,255,0.5); /* połowa poprzedniej jasności */
+}
+
+/* Ikona w środku */
+.corner-icon img {
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)); /* słabsze świecenie */
+    transition: 0.2s ease;
+}
+
+.corner-icon:hover img {
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.9)); /* tylko lekkie glow */
+    transform: scale(1.04);
+}
+.modal-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.15);
+
+    color: #fff;
+    font-size: 26px;
+    line-height: 48px;
+    text-align: center;
+
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+
+    transition: 0.2s ease;
+    z-index: 10000;
+}
+
+.modal-arrow:hover {
+    background: rgba(255,255,255,0.28);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.modal-prev { left: 30px; }
+.modal-next { right: 30px; }
+
+/* animacje jak w galerii */
+.modal-slide-left {
+    animation: modalLeft .25s ease;
+}
+.modal-slide-right {
+    animation: modalRight .25s ease;
+}
+
+@keyframes modalLeft {
+    from { transform: translateX(-40px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes modalRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
 
 
 /* Mobile drobne dopasowanie */
@@ -932,6 +1154,7 @@ a:active {
     .content-wrapper {
         min-height: auto;
     }
+
     .hero {
         grid-template-columns: 1fr;
         text-align: center;

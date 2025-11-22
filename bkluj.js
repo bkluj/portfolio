@@ -192,41 +192,188 @@ let currentPage = 'home';
         `;
         document.head.appendChild(fadeStyle);
 
-        // -------- IMAGE ZOOM LOGIC --------
+        // -------- IMAGE ZOOM + NAVIGATION LOGIC --------
         const modal = document.getElementById('imgModal');
         const modalImg = document.getElementById('imgModalContent');
         const modalClose = document.getElementById('imgModalClose');
 
-        // dla każdego obrazka z klasą .img-zoom ustaw klik
+        let lightboxImages = [];
+        let lightboxIndex = 0;
+
+        // direction: 0 = bez kierunku (np. pierwsze otwarcie), 1 = w prawo, -1 = w lewo
+        function showLightboxImage(direction = 0) {
+            if (!lightboxImages.length) return;
+            const img = lightboxImages[lightboxIndex];
+            const fullSrc = img.getAttribute('data-full') || img.src;
+
+            // usuń poprzednią klasę animacji
+            modalImg.classList.remove('lb-slide-left', 'lb-slide-right');
+            // wymuś reflow, żeby animacja mogła się ponownie odpalić
+            void modalImg.offsetWidth;
+
+            if (direction === 1) {
+                modalImg.classList.add('lb-slide-right');
+            } else if (direction === -1) {
+                modalImg.classList.add('lb-slide-left');
+            }
+
+            modalImg.src = fullSrc;
+        }
+
+        function changeLightbox(delta) {
+            if (!lightboxImages.length) return;
+
+            const last = lightboxImages.length - 1;
+            const oldIndex = lightboxIndex;
+
+            // oblicz nowy indeks
+            const newIndex = Math.min(last, Math.max(0, lightboxIndex + delta));
+
+            // jeśli indeks się nie zmienił — nie animujemy, nie aktualizujemy
+            if (newIndex === oldIndex) return;
+
+            // ustaw nowy indeks
+            lightboxIndex = newIndex;
+
+            // kierunek animacji
+            const dir = delta > 0 ? 1 : -1;
+
+            showLightboxImage(dir);
+        }
+
+
+
+        function openLightboxFrom(img) {
+            const galleryRoot = img.closest('[data-gallery]');
+
+            if (galleryRoot) {
+                // wszystkie obrazki z tej samej galerii
+                lightboxImages = Array.from(galleryRoot.querySelectorAll('.img-zoom'));
+            } else {
+                // pojedynczy obraz (np. w About)
+                lightboxImages = [img];
+            }
+
+            lightboxIndex = lightboxImages.indexOf(img);
+            if (lightboxIndex < 0) lightboxIndex = 0;
+
+            showLightboxImage(0); // pierwsze otwarcie bez kierunku
+            modal.style.display = 'flex';
+        }
+
+
+        // klik na miniaturę .img-zoom otwiera podgląd
         document.querySelectorAll('.img-zoom').forEach(img => {
-            img.addEventListener('click', () => {
-                const fullSrc = img.getAttribute('data-full') || img.src;
-                modalImg.src = fullSrc;
-                modal.style.display = 'flex'; // bo .image-modal jest flexboxem
+            img.addEventListener('click', (e) => {
+                e.stopPropagation(); // żeby np. strzałki z galerii nie reagowały
+                openLightboxFrom(img);
             });
         });
 
-        // zamykanie modala po kliknięciu w X
+        let modalImages = [];
+        let modalIndex = 0;
+
+        document.querySelectorAll('.img-zoom').forEach(img => {
+            img.addEventListener('click', (e) => {
+                const gallery = img.closest('[data-gallery]');
+                if (!gallery) return;
+
+                modalImages = [...gallery.querySelectorAll('.img-zoom')];
+                modalIndex = modalImages.indexOf(img);
+
+                openModalAt(modalIndex);
+            });
+        });
+
+        function openModalAt(index) {
+            const fullSrc =
+                modalImages[index].getAttribute('data-full') ||
+                modalImages[index].src;
+
+            modalImg.src = fullSrc;
+            modal.style.display = 'flex';
+        }
+
+        function modalNextImage() {
+            if (modalIndex < modalImages.length - 1) {
+                modalIndex++;
+                modalImg.classList.remove('modal-slide-right', 'modal-slide-left');
+                void modalImg.offsetWidth; // reset animacji
+                modalImg.classList.add('modal-slide-right');
+                openModalAt(modalIndex);
+            }
+        }
+
+        function modalPrevImage() {
+            if (modalIndex > 0) {
+                modalIndex--;
+                modalImg.classList.remove('modal-slide-right', 'modal-slide-left');
+                void modalImg.offsetWidth; // reset animacji
+                modalImg.classList.add('modal-slide-left');
+                openModalAt(modalIndex);
+            }
+        }
+
+        document.getElementById('modalNext').addEventListener('click', modalNextImage);
+        document.getElementById('modalPrev').addEventListener('click', modalPrevImage);
+
+        // klawiatura
+        document.addEventListener('keydown', (e) => {
+            if (modal.style.display === 'flex') {
+                if (e.key === 'ArrowRight') modalNextImage();
+                if (e.key === 'ArrowLeft') modalPrevImage();
+            }
+        });
+
+// zamykanie modala po kliknięciu w X
         modalClose.addEventListener('click', () => {
             modal.style.display = 'none';
         });
 
         // zamykanie modala po kliknięciu w tło / obraz
         modal.addEventListener('click', (e) => {
-            // jeśli klik nie był wewnątrz obrazka (żeby nie zamykało przy każdym kliknięciu w sam obraz)
             if (e.target === modal || e.target === modalImg) {
                 modal.style.display = 'none';
             }
-        })
+        });
+
+        // nawigacja w podglądzie klawiaturą: ← → oraz Esc
+        document.addEventListener('keydown', (e) => {
+            if (modal.style.display !== 'flex') return; // podgląd zamknięty – ignoruj
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                changeLightbox(-1);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                changeLightbox(1);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                modal.style.display = 'none';
+            }
+        });
+
 
 
         // === Simple gallery init ===
+
+        // ostatnia aktywna galeria (kliknięta / najechana)
+        let __activeGallery = null;
+
+        // GLOBALNA obsługa strzałek na klawiaturze
+        document.addEventListener('keydown', (e) => {
+            if (!__activeGallery) return;
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+
+            e.preventDefault();
+            const dir = e.key === 'ArrowRight' ? 1 : -1;
+            __activeGallery.__goTo(__activeGallery.__index + dir);
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const galleries = document.querySelectorAll('[data-gallery]');
             galleries.forEach(initGallery);
-
-            // Jeżeli masz nawigację "page switch", możesz wywołać to ponownie po zmianie strony.
-            // Np. w showPage() wywołaj: reInitGalleries();
+            // przy przełączaniu stron możesz wołać reInitGalleries();
         });
 
         function initGallery(root) {
@@ -239,6 +386,13 @@ let currentPage = 'home';
             const nextBtn = root.querySelector('[data-next]');
             const dotsWrap = root.querySelector('[data-dots]');
             let index = 0;
+
+            // po wejściu myszką / kliknięciu / dot – ta galeria staje się „aktywna” do klawiatury
+            ['mouseenter','pointerdown','click','touchstart'].forEach(evt => {
+                root.addEventListener(evt, () => {
+                    __activeGallery = root;
+                }, { passive: true });
+            });
 
             // Dots
             const dots = slides.map((_, i) => {
@@ -256,7 +410,12 @@ let currentPage = 'home';
                 prevBtn.disabled = index === 0;
                 nextBtn.disabled = index === slides.length - 1;
                 dots.forEach((d, di) => d.setAttribute('aria-current', di === index ? 'true' : 'false'));
+                root.__index = index;   // zapisujemy stan dla klawiatury
             }
+
+            // udostępniamy goTo i index dla globalnego handlera
+            root.__goTo = goTo;
+            root.__index = index;
 
             prevBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -269,24 +428,18 @@ let currentPage = 'home';
                 goTo(index + 1);
             });
 
-
-            // Klawiatura (gdy focus w obrębie galerii)
-            root.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); }
-                if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); }
-            });
-            // Focusable dla dostępności
+            // Focusable dla dostępności (fallback)
             root.tabIndex = 0;
+            root.addEventListener('focusin', () => {
+                __activeGallery = root;
+            });
 
             // Swipe (touch)
             let startX = 0, isDown = false;
             track.addEventListener('touchstart', (e) => {
                 if (!e.touches[0]) return;
                 isDown = true; startX = e.touches[0].clientX;
-            }, { passive: true });
-
-            track.addEventListener('touchmove', (e) => {
-                // nie potrzebujemy nic w trakcie; tylko pasywnie
+                __activeGallery = root;
             }, { passive: true });
 
             track.addEventListener('touchend', (e) => {
@@ -306,4 +459,5 @@ let currentPage = 'home';
         function reInitGalleries() {
             document.querySelectorAll('[data-gallery]').forEach(initGallery);
         }
+
 
