@@ -1122,6 +1122,43 @@ a:active {
     animation: modalRight .25s ease;
 }
 
+.cert-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 40px;
+}
+
+.cert-card {
+    padding: 20px;
+    text-align: center;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;   /* <--- to centruje pionowo cały kontent */
+    gap: 12px;                 /* ładne odstępy */
+}
+
+.cert-card img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.cert-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.cert-card p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+
 @keyframes modalLeft {
     from { transform: translateX(-40px); opacity: 0; }
     to   { transform: translateX(0); opacity: 1; }

@@ -29,18 +29,29 @@ let currentPage = 'home';
         }
 
         // Initialize footer position
-        window.addEventListener('DOMContentLoaded', () => {
-            const footer = document.getElementById('footer');
-            const homePage = document.getElementById('home');
-            homePage.appendChild(footer);
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.bg-shapes');
+
+            const maxOffset = 120;     // max przesunięcie w px
+            const speed = -0.15;       // ujemny = ruch przeciwny do scrolla
+
+            let offset = scrolled * speed;
+
+            // przy dużym scrollu offset przestaje rosnąć (clamp)
+            if (offset >  maxOffset)  offset =  maxOffset;
+            if (offset < -maxOffset)  offset = -maxOffset;
+
+            parallax.style.transform = `translateY(${offset}px)`;
         });
 
-        // Add interactive parallax effect to background shapes
+
+// Add interactive parallax effect to background shapes
         document.addEventListener('mousemove', (e) => {
             const shapes = document.querySelectorAll('.shape');
             const x = e.clientX / window.innerWidth;
             const y = e.clientY / window.innerHeight;
-            
+
             shapes.forEach((shape, index) => {
                 const speed = (index + 1) * 0.5;
                 const xPos = (x - 0.5) * speed * 20;
@@ -245,24 +256,29 @@ let currentPage = 'home';
 
         function openLightboxFrom(img) {
             const galleryRoot = img.closest('[data-gallery]');
+            const group = img.dataset.group;
 
-            if (galleryRoot) {
-                // wszystkie obrazki z tej samej galerii
+            if (group) {
+                // wszystkie obrazki z tym samym data-group (np. certyfikaty)
+                lightboxImages = Array.from(
+                    document.querySelectorAll(`.img-zoom[data-group="${group}"]`)
+                );
+            } else if (galleryRoot) {
+                // klasyczna galeria projektów
                 lightboxImages = Array.from(galleryRoot.querySelectorAll('.img-zoom'));
             } else {
-                // pojedynczy obraz (np. w About)
+                // pojedynczy obrazek (np. w About)
                 lightboxImages = [img];
             }
 
-            lightboxIndex = lightboxImages.indexOf(img);
-            if (lightboxIndex < 0) lightboxIndex = 0;
-
-            showLightboxImage(0); // pierwsze otwarcie bez kierunku
+            lightboxIndex = Math.max(0, lightboxImages.indexOf(img));
+            showLightboxImage(0);
             modal.style.display = 'flex';
         }
 
 
-        // klik na miniaturę .img-zoom otwiera podgląd
+
+// klik na miniaturę .img-zoom otwiera podgląd
         document.querySelectorAll('.img-zoom').forEach(img => {
             img.addEventListener('click', (e) => {
                 e.stopPropagation(); // żeby np. strzałki z galerii nie reagowały
