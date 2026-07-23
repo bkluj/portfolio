@@ -379,6 +379,37 @@ button[type="submit"] {
     color: rgba(255, 255, 255, 0.8);
     line-height: 1.6;
 }
+/* Project technology filter */
+.project-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 24px;
+    margin-bottom: 30px;
+}
+.project-filters-label {
+    color: white;
+    font-weight: 600;
+    margin-right: 6px;
+}
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+.filter-chip input {
+    accent-color: white;
+    cursor: pointer;
+}
+.clear-filters-btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    margin-left: auto;
+}
 /* About page styles */
 .about-content {
     display: grid;

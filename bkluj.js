@@ -476,4 +476,37 @@ let currentPage = 'home';
             document.querySelectorAll('[data-gallery]').forEach(initGallery);
         }
 
+        // === Project technology filter ===
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterBox = document.getElementById('projectFilters');
+            const clearBtn = document.getElementById('clearFiltersBtn');
+            const projects = Array.from(document.querySelectorAll('.team-section .features'));
+            if (!filterBox || !clearBtn || !projects.length) return;
+
+            const getTechs = (p) => (p.dataset.tech || '').split(',').map(t => t.trim()).filter(Boolean);
+            const allTechs = [...new Set(projects.flatMap(getTechs))].sort();
+
+            allTechs.forEach(tech => {
+                const label = document.createElement('label');
+                label.className = 'filter-chip';
+                label.innerHTML = `<input type="checkbox" value="${tech}"> ${tech}`;
+                filterBox.insertBefore(label, clearBtn);
+            });
+
+            function applyProjectFilters() {
+                const selected = Array.from(filterBox.querySelectorAll('input:checked')).map(i => i.value);
+                projects.forEach(p => {
+                    const visible = selected.length === 0 || getTechs(p).some(t => selected.includes(t));
+                    p.style.display = visible ? '' : 'none';
+                });
+                clearBtn.style.display = selected.length ? 'inline-block' : 'none';
+            }
+
+            filterBox.addEventListener('change', applyProjectFilters);
+            clearBtn.addEventListener('click', () => {
+                filterBox.querySelectorAll('input:checked').forEach(cb => { cb.checked = false; });
+                applyProjectFilters();
+            });
+        });
+
 
